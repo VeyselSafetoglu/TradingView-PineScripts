@@ -1,0 +1,37 @@
+//@version=5
+indicator("Mimar - Seans Haritası (Asian/London/NY)", overlay=true)
+
+// === SEANS SAATLERİ VE ZAMAN DİLİMİ ===
+// Kendi grafiğinin zaman dilimine göre bu saatleri ayarlardan değiştirebilirsin.
+tz = input.string("UTC+3", title="Zaman Dilimi (Timezone)", group="Seans Saatleri")
+
+asia_session = input.session("0000-0900", title="Asya Seansı", group="Seans Saatleri")
+london_session = input.session("1000-1830", title="Londra Seansı", group="Seans Saatleri")
+ny_session = input.session("1530-2200", title="New York Seansı", group="Seans Saatleri")
+
+// === GÖRSEL AYARLAR (ŞEFFAFLIK EKLENDİ) ===
+asia_color = input.color(color.new(color.blue, 92), title="Asya Rengi", group="Görsel Ayarlar")
+london_color = input.color(color.new(color.yellow, 92), title="Londra Rengi", group="Görsel Ayarlar")
+ny_color = input.color(color.new(color.red, 92), title="New York Rengi", group="Görsel Ayarlar")
+
+// === SEANS İÇİNDE MİYİZ KONTROLÜ ===
+in_asia = time(timeframe.period, asia_session, tz)
+in_london = time(timeframe.period, london_session, tz)
+in_ny = time(timeframe.period, ny_session, tz)
+
+// === ARKA PLANI BOYAMA ===
+bgcolor(in_asia ? asia_color : na, title="Asya Arka Planı")
+bgcolor(in_london ? london_color : na, title="Londra Arka Planı")
+bgcolor(in_ny ? ny_color : na, title="New York Arka Planı")
+
+// === SEANS AÇILIŞ ÇİZGİLERİ (OPSİYONEL) ===
+show_lines = input.bool(false, title="Seans Açılışlarına Dikey Çizgi Çek", group="Görsel Ayarlar")
+
+if show_lines and ta.change(in_asia) and in_asia
+    line.new(bar_index, low - ta.atr(14), bar_index, high + ta.atr(14), extend=extend.both, color=color.blue, style=line.style_dotted)
+
+if show_lines and ta.change(in_london) and in_london
+    line.new(bar_index, low - ta.atr(14), bar_index, high + ta.atr(14), extend=extend.both, color=color.yellow, style=line.style_dotted)
+
+if show_lines and ta.change(in_ny) and in_ny
+    line.new(bar_index, low - ta.atr(14), bar_index, high + ta.atr(14), extend=extend.both, color=color.red, style=line.style_dotted)
