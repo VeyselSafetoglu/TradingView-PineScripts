@@ -1,23 +1,24 @@
-🌍 Smart Session Map: Corporate Volume and Session Map
-One of the biggest mistakes of retail traders is trying to apply the same strategy at all hours of the market. However, algorithms and institutional funds base their strategies on "Time & Liquidity" (Time & Price). This indicator whispers to you which major session you are in in the background, without turning your screen into a fairground.
+# TradingView Pine Script Indicators
 
-🔍 Why Should We Follow the Sessions?
-The market does not move randomly; The sessions have characteristic features:
+Welcome to my collection of custom TradingView indicators and strategies, written in Pine Script. This repository serves as a centralized library for all my technical analysis tools.
 
-Asian Session (Consolidation): This is the calm period when liquidity accumulates and the price moves in a narrow range.
+## 🚀 Available Scripts
 
-London Session (Volatility and Breakout): This is the aggressive session in which the liquidity accumulated in Asia is hunted and fake breakouts and the main trend direction begin to form.
+### 1. [VSL-Premium OrderBlocks](./VSL-Premium-OrderBlocks)
+A Smart Money Concepts (SMC) indicator designed to automatically detect High-Probability Bullish and Bearish Order Blocks with precision.
+- **Key Features:** Automatic OB Detection, Market Structure Break (MSB/BOS) integration, Fair Value Gap (FVG) confirmation.
+- **Location:** [`VSL-Premium-OrderBlocks/`](./VSL-Premium-OrderBlocks)
 
-New York Session (Main Trend): It is the period when the market reaches its highest volume and the daily main trend is sealed, especially during the "Golden Hours" where it intersects with London.
+### 2. [Mimar - Session Map (Asian/London/NY)](./Mimar-Session-Map)
+A session mapping tool that highlights the major trading sessions (Asian, London, and New York) directly on your chart, helping you visualize market liquidity and session timings.
+- **Location:** [`Mimar-Session-Map/`](./Mimar-Session-Map)
 
-🛠️ Highlights of the Indicator:
+## 📌 How to Use
+1. Open [TradingView](https://www.tradingview.com/).
+2. Go to the **Pine Editor** tab at the bottom.
+3. Open the `.pine` file from this repository that you wish to use.
+4. Copy the entire code.
+5. Paste it into your Pine Editor and click **Add to Chart**.
 
-Visual Cleanliness: Background painting that does not obscure candles and formations, is transparent and does not tire the eyes.
-
-Overlap Detection: It automatically shows those critical hours when the London and New York sessions are open at the same time and the volume is at its peak, with a combination of colors.
-
-Flexible Time Zone: No matter where you are in the world, you can synchronize seamlessly from the input settings (UTC) to your local time.
-
-Optional Opening Lines: Allows you to set up "Open Price" strategies by simply placing vertical lines on the session opening candles.
-
-💡 Pro Trader Tip: Do not jump into breakouts without volume in the Asian session. Look for real and lasting trends at the intersection of London and New York. This map will give you the advantage of being in the right place at the right time.
+---
+*Created and maintained by [Veysel Safetoğlu](https://github.com/VeyselSafetoglu).*
