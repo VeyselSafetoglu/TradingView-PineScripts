@@ -1,0 +1,192 @@
+//@version=6
+indicator("VSL-GOLD Premium /1m/ [Scalp Edition]", overlay=true, max_boxes_count=500, max_lines_count=500, max_labels_count=500)
+
+// --- 1. AYARLAR ---
+group_signal = "Lux Sinyal Motoru"
+int src_period = input.int(100, "Hassasiyet (Sensitivity)", group=group_signal, tooltip="Düşük (50) = Scalp, Yüksek (100) = Swing")
+float range_mult = input.float(3.0, "Gürültü Filtresi", step=0.1, group=group_signal)
+
+group_smc = "Smart Money (SMC)"
+bool show_ob = input.bool(true, "Order Block Kutularını Göster", group=group_smc)
+int ob_len = input.int(5, "Pivot Derinliği", group=group_smc)
+
+group_risk = "Risk Ayarları"
+float rr = input.float(2.0, "Hedef R:R", step=0.1, group=group_risk)
+
+// --- 2. RENKLER (LUX TEMASI) ---
+color color_bull = #00ffbb // Neon Cyan
+color color_bear = #ff1100 // Neon Red
+color color_neutral = #5d606b
+
+// --- 3. SİNYAL MOTORU (RANGE FILTER - ORİJİNAL) ---
+float src = close
+float wper = (src_period * 2) - 1
+float avrng = ta.ema(math.abs(src - src[1]), src_period)
+float smrng = ta.ema(avrng, int(wper)) * range_mult
+
+float rng_filt = src
+var float x_rng_filt = src
+
+if src > nz(x_rng_filt[1])
+    if src - smrng < nz(x_rng_filt[1])
+        x_rng_filt := nz(x_rng_filt[1])
+    else
+        x_rng_filt := src - smrng
+else
+    if src + smrng > nz(x_rng_filt[1])
+        x_rng_filt := nz(x_rng_filt[1])
+    else
+        x_rng_filt := src + smrng
+
+rng_filt := x_rng_filt
+
+// Trend Yönü
+int trend_dir = 0
+if rng_filt > rng_filt[1]
+    trend_dir := 1
+else if rng_filt < rng_filt[1]
+    trend_dir := -1
+else
+    trend_dir := nz(trend_dir[1])
+
+// Sinyal Tetiği
+bool buy_signal = trend_dir == 1 and trend_dir[1] == -1
+bool sell_signal = trend_dir == -1 and trend_dir[1] == 1
+
+// --- 4. MUMLARI BOYAMA ---
+color bar_col = trend_dir == 1 ? color_bull : color_bear
+barcolor(bar_col)
+
+// --- 5. SMART MONEY (ORDER BLOCKS) ---
+float ph = ta.pivothigh(high, ob_len, ob_len)
+float pl = ta.pivotlow(low, ob_len, ob_len)
+
+if show_ob
+    if not na(pl)
+        box.new(bar_index - ob_len, low[ob_len], bar_index + 30, high[ob_len], border_color=color.new(color_bull, 60), bgcolor=color.new(color_bull, 85), text="OB", text_color=color.white, text_size=size.tiny)
+    if not na(ph)
+        box.new(bar_index - ob_len, high[ob_len], bar_index + 30, low[ob_len], border_color=color.new(color_bear, 60), bgcolor=color.new(color_bear, 85), text="OB", text_color=color.white, text_size=size.tiny)
+
+// --- 6. SİNYAL GÖRSELLİĞİ VE BACKTEST MOTORU (EKLEME) ---
+float atr = ta.atr(14)
+var line l_entry = line.new(na, na, na, na)
+var line l_tp = line.new(na, na, na, na)
+var line l_sl = line.new(na, na, na, na)
+
+// --- BACKTEST DEĞİŞKENLERİ ---
+var bool in_trade = false
+var string trade_type = "NONE"
+var float entry_price = 0.0
+var float tp_price = 0.0
+var float sl_price = 0.0
+
+var int wins = 0
+var int losses = 0
+var float total_rr_score = 0.0
+
+// LONG SİNYALİ
+if buy_signal
+    // Görsel
+    label.new(bar_index, low - atr, "STRONG BUY", color=color_bull, textcolor=color.black, style=label.style_label_up, size=size.small)
+    
+    // Çizgi Hesapları
+    float entry = close
+    float sl = low - atr
+    float tp = entry + ((entry - sl) * rr)
+    
+    // Backtest Başlat (Eğer pozisyonda değilsek)
+    if not in_trade
+        in_trade := true
+        trade_type := "LONG"
+        entry_price := entry
+        sl_price := sl
+        tp_price := tp
+    
+    // Çizgileri Çiz
+    line.delete(l_entry)
+    line.delete(l_tp)
+    line.delete(l_sl)
+    l_entry := line.new(bar_index, entry, bar_index + 15, entry, color=color.gray, style=line.style_dotted)
+    l_tp := line.new(bar_index, tp, bar_index + 15, tp, color=color_bull, width=2)
+    l_sl := line.new(bar_index, sl, bar_index + 15, sl, color=color_bear, width=2)
+    label.new(bar_index + 15, tp, "TP", color=color_bull, textcolor=color.black, style=label.style_label_left, size=size.tiny)
+
+// SHORT SİNYALİ
+if sell_signal
+    // Görsel
+    label.new(bar_index, high + atr, "STRONG SELL", color=color_bear, textcolor=color.white, style=label.style_label_down, size=size.small)
+    
+    // Çizgi Hesapları
+    float entry = close
+    float sl = high + atr
+    float tp = entry - ((sl - entry) * rr)
+    
+    // Backtest Başlat
+    if not in_trade
+        in_trade := true
+        trade_type := "SHORT"
+        entry_price := entry
+        sl_price := sl
+        tp_price := tp
+    
+    // Çizgileri Çiz
+    line.delete(l_entry)
+    line.delete(l_tp)
+    line.delete(l_sl)
+    l_entry := line.new(bar_index, entry, bar_index + 15, entry, color=color.gray, style=line.style_dotted)
+    l_tp := line.new(bar_index, tp, bar_index + 15, tp, color=color_bull, width=2)
+    l_sl := line.new(bar_index, sl, bar_index + 15, sl, color=color_bear, width=2)
+    label.new(bar_index + 15, tp, "TP", color=color_bull, textcolor=color.black, style=label.style_label_left, size=size.tiny)
+
+// --- 7. POZİSYON TAKİBİ VE PUANLAMA ---
+if in_trade
+    // Long Çıkış
+    if trade_type == "LONG"
+        if high >= tp_price
+            wins += 1
+            total_rr_score += rr
+            in_trade := false
+        else if low <= sl_price
+            losses += 1
+            total_rr_score -= 1.0
+            in_trade := false
+            
+    // Short Çıkış
+    else if trade_type == "SHORT"
+        if low <= tp_price
+            wins += 1
+            total_rr_score += rr
+            in_trade := false
+        else if high >= sl_price
+            losses += 1
+            total_rr_score -= 1.0
+            in_trade := false
+
+// --- 8. SMART TRAIL ---
+plot(rng_filt, "Smart Trail", color=trend_dir == 1 ? color_bull : color_bear, linewidth=2)
+
+// --- 9. GÜÇLENDİRİLMİŞ DASHBOARD ---
+var table dash = table.new(position.top_right, 2, 5, bgcolor=color.new(#000000, 20), border_width=0) // Dark theme
+if barstate.islast
+    int total_trades = wins + losses
+    float win_rate = total_trades > 0 ? (float(wins) / float(total_trades)) * 100 : 0.0
+    
+    // Başlık
+    table.cell(dash, 0, 0, "LUX-GOLD PREMIUM", text_color=color_bull, text_size=size.small, bgcolor=color.new(#000000, 80))
+    table.cell(dash, 1, 0, "STATS", text_color=color.white, text_size=size.small, bgcolor=color.new(#000000, 80))
+    
+    // Trend
+    table.cell(dash, 0, 1, "Trend", text_color=color.gray, text_size=size.small, bgcolor=color.new(#000000, 80))
+    table.cell(dash, 1, 1, trend_dir == 1 ? "BULLISH" : "BEARISH", text_color=trend_dir == 1 ? color_bull : color_bear, text_size=size.small, bgcolor=color.new(#000000, 80))
+    
+    // Winrate
+    table.cell(dash, 0, 2, "Win Rate", text_color=color.gray, text_size=size.small, bgcolor=color.new(#000000, 80))
+    table.cell(dash, 1, 2, str.tostring(win_rate, "#.1") + "%", text_color=win_rate > 50 ? color_bull : color_bear, text_size=size.small, bgcolor=color.new(#000000, 80))
+    
+    // Toplam İşlem
+    table.cell(dash, 0, 3, "Total Trades", text_color=color.gray, text_size=size.small, bgcolor=color.new(#000000, 80))
+    table.cell(dash, 1, 3, str.tostring(total_trades), text_color=color.white, text_size=size.small, bgcolor=color.new(#000000, 80))
+    
+    // Net RR Skoru
+    table.cell(dash, 0, 4, "Net Profit (RR)", text_color=color.gray, text_size=size.small, bgcolor=color.new(#000000, 80))
+    table.cell(dash, 1, 4, str.tostring(total_rr_score, "#.1") + "R", text_color=total_rr_score > 0 ? color_bull : color_bear, text_size=size.small, bgcolor=color.new(#000000, 80))
