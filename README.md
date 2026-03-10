@@ -9,8 +9,9 @@ A Smart Money Concepts (SMC) indicator designed to automatically detect High-Pro
 - **Key Features:** Automatic OB Detection, Market Structure Break (MSB/BOS) integration, Fair Value Gap (FVG) confirmation.
 - **Location:** [`VSL-Premium-OrderBlocks/`](./VSL-Premium-OrderBlocks)
 
-### 2. [Mimar - Session Map (Asian/London/NY)](./Mimar-Session-Map)
-A session mapping tool that highlights the major trading sessions (Asian, London, and New York) directly on your chart, helping you visualize market liquidity and session timings.
+### 2. [Mimar - Smart Session Map (Asian/London/NY)](./Mimar-Session-Map)
+A session mapping tool that highlights the major trading sessions (Asian, London, and New York) directly on your chart, helping you visualize market liquidity and session timings safely without obscuring price action.
+- **Key Features:** Overlap Detection, Visual Cleanliness, Flexible Time Zone, Optional Opening Lines.
 - **Location:** [`Mimar-Session-Map/`](./Mimar-Session-Map)
 
 ## 📌 How to Use
