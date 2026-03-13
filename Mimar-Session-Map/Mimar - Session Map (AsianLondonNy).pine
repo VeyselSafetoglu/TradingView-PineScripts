@@ -1,0 +1,37 @@
+//@version=5
+indicator("Mimar - Session Map (Asian/London/NY)", overlay=true)
+
+// === SESSION HOURS AND TIME ZONE ===
+// You can change these hours according to your chart's time zone from the settings.
+tz = input.string("UTC+3", title="Time Zone", group="Session Hours")
+
+asia_session = input.session("0000-0900", title="Asian Session", group="Session Hours")
+london_session = input.session("1000-1830", title="London Session", group="Session Hours")
+ny_session = input.session("1530-2200", title="New York Session", group="Session Hours")
+
+// === VISUAL SETTINGS (TRANSPARENCY ADDED) ===
+asia_color = input.color(color.new(color.blue, 92), title="Asia Color", group="Visual Settings")
+london_color = input.color(color.new(color.yellow, 92), title="London Color", group="Visual Settings")
+ny_color = input.color(color.new(color.red, 92), title="New York Color", group="Visual Settings")
+
+// === ARE WE IN SESSION CHECK ===
+in_asia = time(timeframe.period, asia_session, tz)
+in_london = time(timeframe.period, london_session, tz)
+in_ny = time(timeframe.period, ny_session, tz)
+
+// === COLORING THE BACKGROUND ===
+bgcolor(in_asia ? asia_color : na, title="Asia Background")
+bgcolor(in_london ? london_color : na, title="London Background")
+bgcolor(in_ny ? ny_color : na, title="New York Background")
+
+// === SESSION OPENING LINES (OPTIONAL) ===
+show_lines = input.bool(false, title="Draw Vertical Line at Session Openings", group="Visual Settings")
+
+if show_lines and ta.change(in_asia) and in_asia
+    line.new(bar_index, low - ta.atr(14), bar_index, high + ta.atr(14), extend=extend.both, color=color.blue, style=line.style_dotted)
+
+if show_lines and ta.change(in_london) and in_london
+    line.new(bar_index, low - ta.atr(14), bar_index, high + ta.atr(14), extend=extend.both, color=color.yellow, style=line.style_dotted)
+
+if show_lines and ta.change(in_ny) and in_ny
+    line.new(bar_index, low - ta.atr(14), bar_index, high + ta.atr(14), extend=extend.both, color=color.red, style=line.style_dotted)
