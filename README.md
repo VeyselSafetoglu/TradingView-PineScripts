@@ -23,3 +23,4 @@ A session mapping tool that highlights the major trading sessions (Asian, London
 
 ---
 *Created and maintained by [Veysel Safetoğlu](https://github.com/VeyselSafetoglu).*
+ 
